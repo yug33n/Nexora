@@ -1,8 +1,12 @@
+import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
+import { Auth } from './components/Auth'
 
-createRoot(document.getElementById('root')!).render(
-  <main className="placeholder">
-    <h1>Nexora</h1>
-    <p>Каркас приложения. Экраны появятся в следующих задачах.</p>
-  </main>,
-)
+function App() {
+  const [signedIn, setSignedIn] = useState(false)
+  return signedIn
+    ? <main className="app-shell"><h1>Nexora</h1><p>Экраны в разработке.</p></main>
+    : <Auth onSuccess={() => setSignedIn(true)} />
+}
+
+createRoot(document.getElementById('root')!).render(<App />)
