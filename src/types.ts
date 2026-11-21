@@ -1,5 +1,5 @@
 export type Space = { id: string; name: string }
-export type Note = { id: string; title: string; body: string }
+export type Note = { id: string; spaceId: string; title: string; body: string }
 export type Tab = 'home' | 'notes' | 'people' | 'map' | 'profile'
 export type Editor =
   | { kind: 'space' }

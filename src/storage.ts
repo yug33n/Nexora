@@ -10,7 +10,9 @@ export function loadItems(kind: 'spaces' | 'notes', id?: string): Space[] | Note
       : JSON.parse(localStorage.getItem(LS_NOTES) ?? '[]')
     if (!Array.isArray(all)) return null
     return id
-      ? (all.filter((item) => item.id === id) as Space[] | Note[])
+      ? (kind === 'notes'
+          ? all.filter((item) => 'spaceId' in item && item.spaceId === id)
+          : all.filter((item) => item.id === id)) as Space[] | Note[]
       : (all as Space[] | Note[])
   } catch {
     return null
@@ -47,14 +49,15 @@ export async function request(
     saveItems('spaces', items)
     return items
   }
-  if ((path.endsWith('/spaces') || path.endsWith('/notes')) && data) {
+  if (path.endsWith('/notes') && data) {
+    const spaceId = path.slice('/spaces/'.length, path.indexOf('/notes'))
     const items = (loadItems('notes') ?? []) as Note[]
-    items.push({ id: uid(), title: String(data.title ?? '').trim() || 'Без названия', body: String(data.body ?? '').trim() })
+    items.push({ id: uid(), spaceId, title: String(data.title ?? '').trim() || 'Без названия', body: String(data.body ?? '').trim() })
     saveItems('notes', items)
     return items
   }
   if (path === '/spaces') return (loadItems('spaces') ?? []) as Space[]
-  if (path.endsWith('/search')) {
+  if (path.includes('/search?') || path.endsWith('/search')) {
     const spaceId = path.slice('/spaces/'.length, path.indexOf('/search'))
     const query = new URLSearchParams(path.split('?')[1] ?? '').get('q') ?? ''
     const notes = (loadItems('notes', spaceId) ?? []) as Note[]
