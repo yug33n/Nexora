@@ -3,7 +3,7 @@ import type { FormEvent, ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Auth } from './components/Auth'
 import { request } from './storage'
-import type { Editor, Note, Space } from './types'
+import type { Editor, Note, Space, Tab } from './types'
 import { tabs } from './types'
 import './styles.css'
 
@@ -23,7 +23,7 @@ function App() {
 }
 
 function Workspace() {
-  const [section, setSection] = useState<'home' | 'notes'>('notes')
+  const [section, setSection] = useState<Tab>('home')
   const [spaces, setSpaces] = useState<Space[] | null>(null)
   const [space, setSpace] = useState<Space | null>(null)
   const [notes, setNotes] = useState<Note[] | null>(null)
@@ -124,10 +124,26 @@ function Workspace() {
           ? <div className="rows">{notes.map((note) => <button className="row note" key={note.id} onClick={() => setEditor({ kind: 'read', note })}><strong>{note.title}</strong><span>{note.body}</span></button>)}</div>
           : <div className="empty"><h2>{query.trim() ? 'Ничего не найдено' : 'Пока нет заметок'}</h2><p>{query.trim() ? 'Попробуйте другой запрос.' : 'Добавьте первую запись в это пространство.'}</p></div>}
       </>}
+
+      {section === 'people' && <>
+        <Title description="Факты, важные даты и идеи подарков.">Люди</Title>
+        <div className="empty"><h2>Раздел в разработке</h2><p>Здесь появятся карточки близких.</p></div>
+      </>}
+
+      {section === 'map' && <>
+        <Title description="Нажмите на узел, чтобы открыть заметки.">Карта пространств</Title>
+        <div className="empty"><h2>Раздел в разработке</h2><p>Появится в следующих задачах.</p></div>
+      </>}
+
+      {section === 'profile' && <>
+        <Title>Профиль</Title>
+        <div className="empty"><h2>Раздел в разработке</h2><p>Появится в следующих задачах.</p></div>
+      </>}
     </section>
     <nav className="bottom-nav" aria-label="Разделы приложения">
-      <button aria-current={section === 'home' ? 'page' : undefined} onClick={() => setSection('home')}><span><Icon path={tabs[0].path} /></span>Главная</button>
-      <button aria-current={section === 'notes' ? 'page' : undefined} onClick={() => { setSection('notes'); setSpace(null); setQuery('') }}><span><Icon path={tabs[1].path} /></span>Заметки</button>
+      {tabs.map((item) => <button key={item.id} aria-current={section === item.id ? 'page' : undefined} onClick={() => { setSection(item.id); if (item.id === 'notes') { setSpace(null); setQuery('') } }}>
+        <span><Icon path={item.path} /></span>{item.label}
+      </button>)}
     </nav>
     {editor && <EditorDialog editor={editor} close={() => setEditor(null)} save={save} />}
   </main>
