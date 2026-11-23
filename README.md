@@ -85,6 +85,8 @@
 
 ## Быстрый старт и сборка
 
+> Подробное пошаговое руководство по сборке с нуля, настройке окружения и сборке APK доступно в файле [BUILD.md](BUILD.md).
+
 ### Требования к окружению
 - **Node.js** `22.12+` (или `24.x`) и **npm**
 - Для сборки под Android: **Android Studio**, **JDK 21** (для Gradle) и **Android SDK Platform 35**
@@ -92,7 +94,6 @@
 ### 1. Запуск веб-версии в режиме разработки
 
 ```bash
-cd NexoraReactAndroid
 npm ci
 npm run dev
 ```
@@ -108,8 +109,6 @@ npm run dev
 ### 3. Сборка APK и запуск из исходников
 
 ```bash
-cd NexoraReactAndroid
-
 # Установка зависимостей
 npm ci
 
@@ -126,7 +125,7 @@ npm run android:sync
   # или gradlew.bat assembleDebug на Windows
   ```
   Готовый установочный файл появится по пути:
-  `NexoraReactAndroid/android/app/build/outputs/apk/debug/app-debug.apk`
+  `android/app/build/outputs/apk/debug/app-debug.apk`
 
 - **Через Android Studio (для запуска на эмуляторе или по ADB):**
   ```bash
@@ -134,4 +133,4 @@ npm run android:sync
   ```
   Дождитесь завершения **Gradle Sync**, выберите устройство или эмулятор и нажмите **Run (`Shift + F10`)**. Для экспорта APK через меню IDE выберите **Build → Build Bundle(s) / APK(s) → Build APK(s)**.
 
-> При любых изменениях в папке `src/` перед повторной сборкой APK обязательно выполните `npm run android:sync`[cite: 21].
+> При любых изменениях в папке `src/` перед повторной сборкой APK обязательно выполните `npm run android:sync`.
