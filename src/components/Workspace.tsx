@@ -5,8 +5,9 @@ import { request } from '../storage'
 import { Icon, Title } from './ui'
 import { EditorDialog } from './EditorDialog'
 import { SpaceMap } from './SpaceMap'
+import { Profile } from './Profile'
 
-export function Workspace() {
+export function Workspace({ email = '' }: { email?: string }) {
   const [tab, setTab] = useState<Tab>('home')
   const [spaces, setSpaces] = useState<Space[] | null>(null)
   const [space, setSpace] = useState<Space | null>(null)
@@ -109,7 +110,7 @@ export function Workspace() {
           : spaces.length ? <SpaceMap spaces={spaces} openSpace={openSpace} />
           : <div className="empty"><p>Создайте первое пространство, чтобы увидеть его на карте.</p><button className="secondary" onClick={() => setEditor({ kind: 'space' })}>Новое пространство</button></div>}
       </>}
-      {tab === 'profile' && <><Title>Профиль</Title><div className="empty"><h2>Раздел в разработке</h2><p>Появится в задаче 10.</p></div></>}
+      {tab === 'profile' && <Profile email={email} showSpaces={() => navigate('notes')} />}
     </section>
     <nav className="bottom-nav" aria-label="Разделы приложения">
       {tabs.map((item) => <button key={item.id} aria-current={tab === item.id ? 'page' : undefined} onClick={() => navigate(item.id)}>

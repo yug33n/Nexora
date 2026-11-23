@@ -81,3 +81,33 @@ dialog .quiet { margin-bottom: 12px; }
 
 @keyframes enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 @media (prefers-reduced-motion: reduce) { *, *::backdrop { animation: none !important; transition: none !important; } }
+
+.profile-card {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 28px 16px 24px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: linear-gradient(165deg, #2b2438, var(--surface) 72%);
+  text-align: center;
+}
+.profile-avatar {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 8px;
+  border-radius: 22px;
+  background: var(--accent);
+  color: var(--ink);
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+.profile-card h2 { font-size: 1.125rem; }
+.profile-card p, .profile-details dd { font-size: .875rem; }
+.profile-heading { margin: 24px 0 10px; }
+.profile-details { margin: 0; }
+.profile-details .row { min-height: 48px; justify-content: space-between; flex-wrap: wrap; padding-inline: 16px; gap: 4px 12px; }
+.profile-details dd { margin: 0; color: var(--muted); }
+

@@ -5,6 +5,7 @@ import { Auth } from './components/Auth'
 import { request } from './storage'
 import type { Editor, Note, Space, Tab } from './types'
 import { tabs } from './types'
+import { Profile } from './components/Profile'
 import './styles.css'
 
 function Icon({ path }: { path: string }) {
@@ -135,10 +136,7 @@ function Workspace() {
         <div className="empty"><h2>Раздел в разработке</h2><p>Появится в следующих задачах.</p></div>
       </>}
 
-      {section === 'profile' && <>
-        <Title>Профиль</Title>
-        <div className="empty"><h2>Раздел в разработке</h2><p>Появится в следующих задачах.</p></div>
-      </>}
+      {section === 'profile' && <Profile email={localStorage.getItem('nexora_email') ?? ''} showSpaces={() => { setSection('notes'); setSpace(null); }} />}
     </section>
     <nav className="bottom-nav" aria-label="Разделы приложения">
       {tabs.map((item) => <button key={item.id} aria-current={section === item.id ? 'page' : undefined} onClick={() => { setSection(item.id); if (item.id === 'notes') { setSpace(null); setQuery('') } }}>
