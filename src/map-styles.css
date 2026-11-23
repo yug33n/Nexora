@@ -1,0 +1,60 @@
+/* Блок стилей карты — задача 09.
+   При переносе в проект добавляется в конец src/styles.css. */
+
+.map-board {
+  position: relative;
+  border: 1px solid #303850;
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 13px 17px, #a3a2cc70 1px, transparent 1.5px) 0 0 / 61px 73px,
+    radial-gradient(circle at 22px 31px, #9b91ba45 1px, transparent 1.5px) 0 0 / 43px 57px,
+    radial-gradient(ellipse at 50% 45%, #172951, #0c142d 58%, #090c1a 95%);
+}
+.map-orbit { height: clamp(370px, 56dvh, 540px); }
+.map-edges { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.map-edges line { stroke: currentColor; stroke-width: 1.5; opacity: .86; filter: drop-shadow(0 0 3px currentColor); }
+.map-edges ellipse { fill: none; stroke: #9bb3eb35; stroke-dasharray: 2 6; }
+.map-center { display: flex; align-items: center; gap: 8px; width: max-content; font-weight: 700; }
+.map-core {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  color: #211835;
+  background: #e4d8ff;
+  box-shadow: 0 0 0 5px #bfa7f52c, 0 0 25px #ba96ff75;
+}
+.map-node { min-height: 44px; border: 0; border-radius: 12px; background: transparent; font-size: .875rem; overflow-wrap: anywhere; }
+.map-orbit .map-center, .map-orbit .map-node { position: absolute; transform: translateX(-50%); }
+.map-orbit .map-center { top: calc(50% - 19px); left: 50%; flex-direction: column; gap: 6px; pointer-events: none; }
+.map-orbit .map-node { width: 32%; max-width: 140px; height: 50px; margin-top: -18px; padding: 0; }
+.map-caption { color: #f1ebff; font-size: .75rem; text-shadow: 0 1px 4px #0e0b17, 0 1px 7px #0e0b17; }
+.map-node .map-caption { position: absolute; top: 29px; inset-inline: 0; width: fit-content; max-width: 100%; margin-inline: auto; padding: 0 6px; border-radius: 8px; background: #101831; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.map-star {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  width: 13px;
+  height: 13px;
+  transform: translate(-50%, -50%);
+  border: 2px solid #f6f0ff;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 3px #111b38, 0 0 15px currentColor;
+  transition: scale 160ms var(--motion);
+}
+.map-node:active .map-star, .map-node:focus-visible .map-star { scale: 1.25; }
+.map-tone-0 { color: #82c7ff; }
+.map-tone-1 { color: #c0a0ff; }
+.map-tone-2 { color: #6edfc1; }
+.map-tone-3 { color: #f1cc79; }
+.map-tree { padding: 20px; }
+.map-tree ul { list-style: none; margin: 0 0 0 19px; padding: 0; }
+.map-tree .map-node { position: relative; padding: 6px 12px; border: 1px solid #675780; background: #272139; }
+.map-tree .map-node:active { background: #403453; }
+.map-tree li { position: relative; padding: 12px 0 0 24px; }
+.map-tree li::before, .map-tree li::after { content: ''; position: absolute; background: #ad90d5; }
+.map-tree li::before { top: 0; bottom: 0; left: 0; width: 1px; }
+.map-tree li:last-child::before { bottom: auto; height: 34px; }
+.map-tree li::after { top: 34px; left: 0; width: 24px; height: 1px; }
