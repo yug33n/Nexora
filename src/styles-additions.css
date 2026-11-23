@@ -1,0 +1,20 @@
+/* Дополнение к src/styles.css — задача 08.
+   При переносе в проект блоки добавляются в конец src/styles.css. */
+
+.recent { margin-top: 24px; }
+.note { display: grid; gap: 4px; padding: 16px; }
+.note > span {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  font-size: .875rem;
+}
+.empty { padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
+.empty .secondary { margin-top: 12px; }
+.empty p { color: var(--muted); margin-top: 8px; }
+.tools { display: flex; gap: 8px; margin-bottom: 16px; }
+.tools input { flex: 1; min-width: 0; }
+.tools button { white-space: nowrap; }
+.note-body { white-space: pre-wrap; }

@@ -1,0 +1,113 @@
+:root {
+  color-scheme: dark;
+  font: 16px/1.5 system-ui, sans-serif;
+  --canvas: #141416;
+  --surface: #1d1d21;
+  --raised: #27272d;
+  --line: #383840;
+  --text: #f5f3f8;
+  --muted: #b2afb9;
+  --accent: #d6c3ff;
+  --ink: #261a3b;
+  --motion: cubic-bezier(.2, .75, .25, 1);
+  background: var(--canvas);
+  color: var(--text);
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+button, input, textarea { font: inherit; }
+button { color: inherit; cursor: pointer; }
+button:disabled { color: var(--muted); background: var(--raised); cursor: default; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+h1, h2, p { margin: 0; overflow-wrap: anywhere; }
+h1 { font-size: clamp(1.75rem, 7vw, 2.25rem); line-height: 1.15; letter-spacing: -.035em; }
+h2 { font-size: 1rem; }
+
+.app-shell { width: min(100%, 640px); margin: auto; min-height: 100dvh; padding: env(safe-area-inset-top) 20px calc(100px + env(safe-area-inset-bottom)); }
+.topbar { display: flex; align-items: center; min-height: 68px; border-bottom: 1px solid var(--line); }
+.wordmark { display: flex; align-items: center; gap: 10px; font-weight: 650; }
+.brand-mark, .tile { display: grid; place-items: center; flex: none; border-radius: 10px; }
+.brand-mark { width: 32px; height: 32px; background: var(--accent); color: var(--ink); font-weight: 750; }
+.tile { width: 40px; height: 40px; background: var(--raised); color: var(--accent); }
+.view { animation: enter 200ms var(--motion) both; }
+.page-title { padding: 28px 0 20px; }
+.page-title p, .quiet, .empty p { color: var(--muted); }
+.page-title p, .empty p { margin-top: 8px; }
+.section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+
+.primary, .secondary, .text-button { min-height: 44px; border-radius: 12px; padding: 8px 14px; font-size: .875rem; font-weight: 650; }
+.primary { border: 1px solid transparent; background: var(--accent); color: var(--ink); }
+.secondary { border: 1px solid var(--line); background: var(--surface); }
+.text-button { border: 1px solid transparent; color: var(--accent); background: transparent; }
+.back { margin: 8px 0 -12px; padding-inline: 0; }
+.wide { width: 100%; margin-top: 16px; }
+.rows { overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
+.row { width: 100%; min-height: 64px; display: flex; align-items: center; gap: 12px; padding: 12px; border: 0; background: var(--surface); text-align: left; }
+.row + .row { border-top: 1px solid var(--line); }
+.row strong { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.row > span:last-child { color: var(--muted); }
+button.row:active, .secondary:active { background: var(--raised); }
+.note { display: grid; gap: 4px; padding: 16px; }
+.note > span { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; font-size: .875rem; }
+.empty { padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
+.empty .secondary { margin-top: 12px; }
+.tools { display: flex; gap: 8px; margin-bottom: 16px; }
+.tools input { flex: 1; min-width: 0; }
+.tools button { white-space: nowrap; }
+
+.bottom-nav { position: fixed; z-index: 4; inset: auto 0 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); width: min(100%, 640px); margin: auto; padding: 6px 8px calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--canvas); }
+.bottom-nav button { display: grid; justify-items: center; align-content: center; gap: 2px; min-height: 52px; padding: 0; border: 0; background: transparent; color: var(--muted); font-size: .6875rem; }
+.bottom-nav button span { display: grid; place-items: center; width: 44px; height: 30px; border-radius: 20px; }
+.bottom-nav button[aria-current] { color: var(--accent); }
+.bottom-nav button[aria-current] span { background: #342948; }
+
+.auth { min-height: 100dvh; display: grid; place-items: center; padding: 24px 20px; }
+.auth-card { width: min(100%, 420px); padding: 24px; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; animation: enter 220ms var(--motion) both; }
+.auth-card > button { width: 100%; margin-top: 12px; }
+label { display: grid; gap: 6px; margin-bottom: 14px; font-size: .875rem; }
+input, textarea { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--canvas); color: var(--text); }
+input::placeholder { color: var(--muted); }
+textarea { resize: vertical; }
+.error { color: #ffb8c4; font-size: .875rem; }
+
+dialog { width: min(calc(100% - 32px), 460px); max-height: calc(100dvh - 32px); padding: 20px; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 20px; }
+dialog[open] { animation: enter 220ms var(--motion) both; }
+dialog::backdrop { background: rgb(0 0 0 / 65%); }
+dialog h2 { font-size: 1.25rem; margin-bottom: 16px; }
+dialog .quiet { margin-bottom: 12px; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+.note-body { white-space: pre-wrap; }
+
+@keyframes enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { *, *::backdrop { animation: none !important; transition: none !important; } }
+
+.profile-card {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 28px 16px 24px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: linear-gradient(165deg, #2b2438, var(--surface) 72%);
+  text-align: center;
+}
+.profile-avatar {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 8px;
+  border-radius: 22px;
+  background: var(--accent);
+  color: var(--ink);
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+.profile-card h2 { font-size: 1.125rem; }
+.profile-card p, .profile-details dd { font-size: .875rem; }
+.profile-heading { margin: 24px 0 10px; }
+.profile-details { margin: 0; }
+.profile-details .row { min-height: 48px; justify-content: space-between; flex-wrap: wrap; padding-inline: 16px; gap: 4px 12px; }
+.profile-details dd { margin: 0; color: var(--muted); }
+
