@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Auth } from './components/Auth'
-import { request } from './storage'
+import { openNotesFolder, pickNotesFolder, request, usesNotesFolder } from './storage'
 import type { Editor, Note, Space, Tab } from './types'
 import { tabs } from './types'
 import { Profile } from './components/Profile'
@@ -18,6 +18,45 @@ function Title({ children, description }: { children: ReactNode; description?: s
 
 function App() {
   const [signedIn, setSignedIn] = useState(false)
+  const [folder, setFolder] = useState<'checking' | 'required' | 'ready'>(usesNotesFolder ? 'checking' : 'ready')
+  const [picking, setPicking] = useState(false)
+  const [folderError, setFolderError] = useState('')
+
+  useEffect(() => {
+    if (!usesNotesFolder) return
+    openNotesFolder()
+      .then((ready) => setFolder(ready ? 'ready' : 'required'))
+      .catch(() => {
+        setFolderError('Не удалось открыть хранилище. Восстановите доступ к папке или выберите другую.')
+        setFolder('required')
+      })
+  }, [])
+
+  const chooseFolder = async () => {
+    setPicking(true)
+    try {
+      if (await pickNotesFolder()) setFolder('ready')
+    } catch {
+      setFolderError('Не удалось открыть или создать файл заметок. Проверьте доступ к папке или выберите другую.')
+    } finally {
+      setPicking(false)
+    }
+  }
+
+  if (folder !== 'ready') return <main className="auth">
+    <section className="auth-card" aria-labelledby="storage-title">
+      <div className="wordmark"><span className="brand-mark">N</span> Nexora</div>
+      <header className="page-title">
+        <h1 id="storage-title">Папка для заметок</h1>
+        <p>Выберите папку на телефоне. В ней Nexora создаст отдельную папку с заметками для каждого пространства.</p>
+      </header>
+      {folderError && <p className="error" role="alert">{folderError}</p>}
+      {folder === 'checking'
+        ? <p className="quiet" role="status">Открываем хранилище…</p>
+        : <button className="primary" onClick={chooseFolder} disabled={picking}>Выбрать папку</button>}
+    </section>
+  </main>
+
   return signedIn
     ? <Workspace />
     : <Auth onSuccess={() => setSignedIn(true)} />
