@@ -1,3 +1,4 @@
+import { usesNotesFolder } from '../storage'
 import { Title } from './ui'
 
 export function Profile({ email, showSpaces }: { email: string; showSpaces: () => void }) {
@@ -10,7 +11,7 @@ export function Profile({ email, showSpaces }: { email: string; showSpaces: () =
     </section>
     <h2 className="profile-heading">Настройки и данные</h2>
     <dl className="rows profile-details">
-      <div className="row"><dt>Хранилище</dt><dd>Локально (localStorage)</dd></div>
+      <div className="row"><dt>Хранилище</dt><dd>{usesNotesFolder ? 'Папка на телефоне' : 'В браузере'}</dd></div>
       <div className="row"><dt>Оформление</dt><dd>Тёмная тема</dd></div>
       <div className="row"><dt>Поиск</dt><dd>По словам</dd></div>
       <div className="row"><dt>Модель ИИ</dt><dd>Не подключена</dd></div>
