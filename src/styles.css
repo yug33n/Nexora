@@ -110,4 +110,9 @@ dialog .quiet { margin-bottom: 12px; }
 .profile-details { margin: 0; }
 .profile-details .row { min-height: 48px; justify-content: space-between; flex-wrap: wrap; padding-inline: 16px; gap: 4px 12px; }
 .profile-details dd { margin: 0; color: var(--muted); }
+.profile-storage { justify-content: space-between; }
+.profile-storage > span:last-child { text-align: right; }
+.profile-storage + .profile-details { border-top: 1px solid var(--line); }
+.storage-settings { display: grid; gap: 12px; margin-bottom: 16px; padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
+.storage-settings .secondary { justify-self: start; }
 

@@ -75,6 +75,15 @@ public class NotesFolderPlugin extends Plugin {
 
     @PluginMethod
     public void pick(PluginCall call) {
+        pickFolder(call);
+    }
+
+    @PluginMethod
+    public void move(PluginCall call) {
+        pickFolder(call);
+    }
+
+    private void pickFolder(PluginCall call) {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
         intent.addFlags(ACCESS_FLAGS | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
@@ -98,6 +107,11 @@ public class NotesFolderPlugin extends Plugin {
         Uri tree = intent.getData();
         String previousFolder = preferences().getString(FOLDER_KEY, null);
         boolean newFolder = !tree.toString().equals(previousFolder);
+        boolean moving = "move".equals(call.getMethodName());
+        if (moving && !newFolder) {
+            call.resolve();
+            return;
+        }
         boolean granted = false;
         try {
             int flags = intent.getFlags() & ACCESS_FLAGS;
@@ -105,16 +119,84 @@ public class NotesFolderPlugin extends Plugin {
             resolver().takePersistableUriPermission(tree, flags);
             granted = true;
 
-            String data = openFolder(tree, call.getString("initialData", "{\"spaces\":[],\"notes\":[]}"));
+            String data = moving
+                ? transferFolder(previousFolder, tree)
+                : openFolder(tree, call.getString("initialData", "{\"spaces\":[],\"notes\":[]}"));
 
             if (!preferences().edit().putString(FOLDER_KEY, tree.toString()).commit()) {
+                preferences().edit().putString(FOLDER_KEY, previousFolder).apply();
                 throw new IOException("Cannot remember notes folder");
             }
             if (newFolder && previousFolder != null) release(Uri.parse(previousFolder));
             resolveData(call, data);
         } catch (Exception error) {
             if (newFolder && granted) release(tree);
-            call.reject("Cannot use selected folder", error);
+            call.reject("Cannot use selected folder",
+                error instanceof FolderConflict ? "FOLDER_CONFLICT" : "FOLDER_ERROR", error);
+        }
+    }
+
+    private static class FolderConflict extends IOException {}
+
+    private String transferFolder(String previousFolder, Uri target) throws Exception {
+        if (previousFolder == null) throw new IOException("Notes folder missing");
+        Uri source = Uri.parse(previousFolder);
+        if (!hasFolderAccess(source)) throw new IOException("Folder access revoked");
+
+        JSONObject data = new JSONObject(openFolder(source, null));
+        Map<String, Uri> files = listFiles(target);
+        Map<String, Uri> directories = listDirectories(target);
+        Uri nested = directories.get(LEGACY_APP_FOLDER);
+        if (files.containsKey(SPACE_METADATA) || (!files.containsKey(FORMAT_FILE)
+            && (files.containsKey(LEGACY_FILE) || files.containsKey(LEGACY_FORMAT_FILE)
+                || (nested != null && hasLegacySpaceFolders(listFiles(nested)))))) {
+            throw new FolderConflict();
+        }
+
+        JSONObject existing = readSpaceFolders(target);
+        JSONArray spaces = data.getJSONArray("spaces");
+        requirePrefix(existing.getJSONArray("spaces"), spaces);
+        Map<String, JSONArray> notes = groupNotes(data.getJSONArray("notes"));
+        Map<String, JSONArray> existingNotes = groupNotes(existing.getJSONArray("notes"));
+        for (Map.Entry<String, JSONArray> entry : existingNotes.entrySet()) {
+            requirePrefix(entry.getValue(), notes.get(entry.getKey()));
+        }
+
+        Map<String, SpaceFolder> targetSpaces = findSpaces(target);
+        long order = targetSpaces.values().stream().mapToLong(SpaceFolder::order).max().orElse(-1) + 1;
+        for (int index = targetSpaces.size(); index < spaces.length(); index++) {
+            createSpace(target, targetSpaces, order++, spaces.getJSONObject(index));
+        }
+        for (Map.Entry<String, JSONArray> entry : notes.entrySet()) {
+            Uri directory = targetSpaces.get(entry.getKey()).directory();
+            Map<String, Uri> noteFiles = listFiles(directory);
+            long noteOrder = nextNoteOrder(noteFiles);
+            JSONArray copied = existingNotes.get(entry.getKey());
+            for (int index = copied == null ? 0 : copied.length(); index < entry.getValue().length(); index++) {
+                saveNote(directory, noteFiles, noteOrder++, entry.getValue().getJSONObject(index));
+            }
+        }
+        String transferred = readSpaceFolders(target).toString();
+        if (!data.toString().equals(transferred)) throw new IOException("Cannot verify transferred data");
+        if (!files.containsKey(FORMAT_FILE)) publish(target, files, FORMAT_FILE, "{\"version\":4}");
+        return transferred;
+    }
+
+    private Map<String, JSONArray> groupNotes(JSONArray notes) throws Exception {
+        Map<String, JSONArray> grouped = new HashMap<>();
+        for (int index = 0; index < notes.length(); index++) {
+            JSONObject note = notes.getJSONObject(index);
+            grouped.computeIfAbsent(note.getString("spaceId"), key -> new JSONArray()).put(note);
+        }
+        return grouped;
+    }
+
+    private void requirePrefix(JSONArray existing, JSONArray source) throws Exception {
+        if (source == null || existing.length() > source.length()) throw new FolderConflict();
+        for (int index = 0; index < existing.length(); index++) {
+            if (!existing.getJSONObject(index).toString().equals(source.getJSONObject(index).toString())) {
+                throw new FolderConflict();
+            }
         }
     }
 

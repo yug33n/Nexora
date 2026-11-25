@@ -9,6 +9,7 @@ type FolderResult = { data?: string }
 interface NotesFolderPlugin {
   open(): Promise<FolderResult>
   pick(options: { initialData: string }): Promise<FolderResult>
+  move(): Promise<FolderResult>
   save(options: { kind: keyof NotesData; item: string }): Promise<void>
 }
 
@@ -43,6 +44,12 @@ export async function openNotesFolder(): Promise<boolean> {
 
 export async function pickNotesFolder(): Promise<boolean> {
   return loadFolder(await notesFolder.pick({ initialData: JSON.stringify(legacyData()) }))
+}
+
+export function moveNotesFolder(): Promise<boolean> {
+  const operation = pendingSave.then(async () => loadFolder(await notesFolder.move()))
+  pendingSave = operation.catch(() => {})
+  return operation
 }
 
 function currentData(): NotesData {
