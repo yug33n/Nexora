@@ -10,6 +10,7 @@ interface NotesFolderPlugin {
   open(): Promise<FolderResult>
   pick(options: { initialData: string }): Promise<FolderResult>
   move(): Promise<FolderResult>
+  exportZip(options: { entries: string }): Promise<{ saved: boolean }>
   save(options: { kind: keyof NotesData; item: string }): Promise<void>
 }
 
@@ -56,6 +57,50 @@ function currentData(): NotesData {
   if (!usesNotesFolder) return legacyData()
   if (!folderData) throw new Error('Сначала выберите папку для заметок.')
   return folderData
+}
+
+function archiveName(name: string, fallback: string): string {
+  const safe = name.replace(/[\p{Cc}/\\:*?"<>|]/gu, '_').trim()
+  return Array.from(safe).slice(0, 55).join('').replace(/[. ]+$/u, '') || fallback
+}
+
+function notesArchiveEntries(data: NotesData): { path: string; content: string }[] {
+  const spaces = new Map(data.spaces.map((space, index) => [
+    space.id, `${index + 1} - ${archiveName(space.name, 'Пространство')}`,
+  ]))
+  const entries = [{ path: 'nexora.json', content: JSON.stringify(data, null, 2) }]
+  data.notes.forEach((note, index) => {
+    const folder = spaces.get(note.spaceId) ?? 'Без пространства'
+    const filename = archiveName(note.title, 'Без названия')
+    const title = note.title.replace(/[\r\n]+/g, ' ')
+    entries.push({
+      path: `notes/${folder}/${index + 1} - ${filename}.md`,
+      content: `# ${title}\n\n${note.body}`,
+    })
+  })
+  return entries
+}
+
+export async function exportNotesZip(): Promise<'saved' | 'download' | 'cancelled'> {
+  await pendingSave
+  const data = currentData()
+  const entries = notesArchiveEntries(data)
+  if (usesNotesFolder) {
+    const result = await notesFolder.exportZip({ entries: JSON.stringify(entries) })
+    return result.saved ? 'saved' : 'cancelled'
+  }
+
+  const { strToU8, zipSync } = await import('fflate')
+  const archive = zipSync(Object.fromEntries(entries.map(({ path, content }) => [path, strToU8(content)])))
+  const url = URL.createObjectURL(new Blob([archive], { type: 'application/zip' }))
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'nexora-notes.zip'
+  document.body.append(link)
+  link.click()
+  link.remove()
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+  return 'download'
 }
 
 function appendItem<K extends keyof NotesData>(kind: K, item: NotesData[K][number]): Promise<NotesData[K]> {

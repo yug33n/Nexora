@@ -1,9 +1,27 @@
 import { useState } from 'react'
-import { moveNotesFolder, usesNotesFolder } from '../storage'
+import { exportNotesZip, moveNotesFolder, usesNotesFolder } from '../storage'
 import { Title } from './ui'
 
 export function Profile({ email, showSpaces }: { email: string; showSpaces: () => void }) {
   const [storageOpen, setStorageOpen] = useState(false)
+  const [exporting, setExporting] = useState(false)
+  const [exportStatus, setExportStatus] = useState('')
+  const [exportError, setExportError] = useState('')
+
+  const exportNotes = async () => {
+    setExporting(true)
+    setExportStatus('')
+    setExportError('')
+    try {
+      const result = await exportNotesZip()
+      if (result === 'saved') setExportStatus('ZIP-архив сохранён.')
+      if (result === 'download') setExportStatus('Скачивание ZIP-архива запущено.')
+    } catch {
+      setExportError('Не удалось экспортировать заметки. Повторите попытку.')
+    } finally {
+      setExporting(false)
+    }
+  }
 
   if (storageOpen) return <StorageSettings back={() => setStorageOpen(false)} />
 
@@ -24,9 +42,14 @@ export function Profile({ email, showSpaces }: { email: string; showSpaces: () =
         <div className="row"><dt>Оформление</dt><dd>Тёмная тема</dd></div>
         <div className="row"><dt>Поиск</dt><dd>По словам</dd></div>
         <div className="row"><dt>Модель ИИ</dt><dd>Не подключена</dd></div>
-        <div className="row"><dt>Экспорт</dt><dd>В разработке</dd></div>
       </dl>
+      <button type="button" className="row profile-storage" onClick={exportNotes} disabled={exporting}>
+        <span>{exporting ? 'Экспортируем заметки…' : 'Экспортировать заметки'}</span>
+        <span>.zip</span>
+      </button>
     </div>
+    {exportStatus && <p role="status">{exportStatus}</p>}
+    {exportError && <p className="error" role="alert">{exportError}</p>}
     <button className="secondary wide" onClick={showSpaces}>Мои пространства</button>
   </>
 }

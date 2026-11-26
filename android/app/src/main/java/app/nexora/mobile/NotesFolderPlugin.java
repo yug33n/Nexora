@@ -38,6 +38,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @CapacitorPlugin(name = "NotesFolder")
 public class NotesFolderPlugin extends Plugin {
@@ -81,6 +83,55 @@ public class NotesFolderPlugin extends Plugin {
     @PluginMethod
     public void move(PluginCall call) {
         pickFolder(call);
+    }
+
+    @PluginMethod
+    public void exportZip(PluginCall call) {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        intent.addFlags(ACCESS_FLAGS | Intent.FLAG_GRANT_PREFIX_URI_PERMISSION);
+        startActivityForResult(call, intent, "exportFolderPicked");
+    }
+
+    @ActivityCallback
+    private void exportFolderPicked(PluginCall call, ActivityResult result) {
+        if (call == null) return;
+        Intent intent = result.getData();
+        if (result.getResultCode() != Activity.RESULT_OK || intent == null || intent.getData() == null) {
+            call.resolve(new JSObject().put("saved", false));
+            return;
+        }
+
+        Uri folder = intent.getData();
+        execute(() -> {
+            Uri destination = null;
+            try {
+                JSONArray entries = new JSONArray(call.getString("entries", "[]"));
+                destination = DocumentsContract.createDocument(
+                    resolver(), documentUri(folder), "application/zip", "nexora-notes.zip");
+                if (destination == null) throw new IOException("Cannot create ZIP archive");
+                try (OutputStream output = resolver().openOutputStream(destination, "w")) {
+                    if (output == null) throw new IOException("Cannot open ZIP destination");
+                    try (ZipOutputStream zip = new ZipOutputStream(output)) {
+                        for (int index = 0; index < entries.length(); index++) {
+                            JSONObject entry = entries.getJSONObject(index);
+                            zip.putNextEntry(new ZipEntry(entry.getString("path")));
+                            zip.write(entry.getString("content").getBytes(StandardCharsets.UTF_8));
+                            zip.closeEntry();
+                        }
+                    }
+                }
+                call.resolve(new JSObject().put("saved", true));
+            } catch (Exception error) {
+                if (destination != null) {
+                    try {
+                        DocumentsContract.deleteDocument(resolver(), destination);
+                    } catch (Exception cleanupError) {
+                        error.addSuppressed(cleanupError);
+                    }
+                }
+                call.reject("Cannot save ZIP archive", error);
+            }
+        });
     }
 
     private void pickFolder(PluginCall call) {
