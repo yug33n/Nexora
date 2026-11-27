@@ -115,4 +115,7 @@ dialog .quiet { margin-bottom: 12px; }
 .profile-storage + .profile-details { border-top: 1px solid var(--line); }
 .storage-settings { display: grid; gap: 12px; margin-bottom: 16px; padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
 .storage-settings .secondary { justify-self: start; }
+.profile-details + .profile-storage { border-top: 1px solid var(--line); }
+.profile-storage:focus-visible { outline-offset: -3px; }
+.profile-storage > span:last-child { font-size: .875rem; }
 

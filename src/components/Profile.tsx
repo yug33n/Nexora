@@ -1,9 +1,46 @@
-import { useState } from 'react'
-import { moveNotesFolder, usesNotesFolder } from '../storage'
+import { useRef, useState } from 'react'
+import { exportNotesZip, importNotesZip, moveNotesFolder, usesNotesFolder } from '../storage'
 import { Title } from './ui'
 
-export function Profile({ email, showSpaces }: { email: string; showSpaces: () => void }) {
+export function Profile({ email, showSpaces, onImport }: { email: string; showSpaces: () => void; onImport: () => void }) {
   const [storageOpen, setStorageOpen] = useState(false)
+  const [exporting, setExporting] = useState(false)
+  const [importing, setImporting] = useState(false)
+  const importInput = useRef<HTMLInputElement>(null)
+  const [archiveStatus, setArchiveStatus] = useState('')
+  const [archiveError, setArchiveError] = useState('')
+
+  const exportNotes = async () => {
+    setExporting(true)
+    setArchiveStatus('')
+    setArchiveError('')
+    try {
+      const result = await exportNotesZip()
+      if (result === 'saved') setArchiveStatus('ZIP-архив сохранён.')
+      if (result === 'download') setArchiveStatus('Скачивание ZIP-архива запущено.')
+    } catch {
+      setArchiveError('Не удалось экспортировать заметки. Повторите попытку.')
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  const importNotes = async (file: File) => {
+    setImporting(true)
+    setArchiveStatus('')
+    setArchiveError('')
+    try {
+      const { spaces, notes } = await importNotesZip(file)
+      setArchiveStatus(spaces || notes
+        ? `Добавлено пространств: ${spaces}. Добавлено заметок: ${notes}.`
+        : 'В архиве нет новых заметок или пространств.')
+    } catch (error) {
+      setArchiveError(error instanceof Error ? error.message : 'Не удалось импортировать заметки.')
+    } finally {
+      onImport()
+      setImporting(false)
+    }
+  }
 
   if (storageOpen) return <StorageSettings back={() => setStorageOpen(false)} />
 
@@ -24,9 +61,26 @@ export function Profile({ email, showSpaces }: { email: string; showSpaces: () =
         <div className="row"><dt>Оформление</dt><dd>Тёмная тема</dd></div>
         <div className="row"><dt>Поиск</dt><dd>По словам</dd></div>
         <div className="row"><dt>Модель ИИ</dt><dd>Не подключена</dd></div>
-        <div className="row"><dt>Экспорт</dt><dd>В разработке</dd></div>
       </dl>
     </div>
+    <h2 className="profile-heading">Резервная копия</h2>
+    <div className="rows">
+      <button type="button" className="row profile-storage" onClick={exportNotes} disabled={exporting || importing}>
+        <span>{exporting ? 'Экспортируем заметки…' : 'Экспортировать заметки'}</span>
+        <span>Скачать ZIP <span aria-hidden="true">›</span></span>
+      </button>
+      <button type="button" className="row profile-storage" onClick={() => importInput.current?.click()} disabled={exporting || importing}>
+        <span>{importing ? 'Импортируем заметки…' : 'Импортировать заметки'}</span>
+        <span>Выбрать файл <span aria-hidden="true">›</span></span>
+      </button>
+      <input ref={importInput} type="file" accept=".zip,application/zip" hidden onChange={(event) => {
+        const file = event.currentTarget.files?.[0]
+        event.currentTarget.value = ''
+        if (file) void importNotes(file)
+      }} />
+    </div>
+    {archiveStatus && <p role="status">{archiveStatus}</p>}
+    {archiveError && <p className="error" role="alert">{archiveError}</p>}
     <button className="secondary wide" onClick={showSpaces}>Мои пространства</button>
   </>
 }
