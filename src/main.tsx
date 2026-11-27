@@ -175,7 +175,7 @@ function Workspace() {
         <div className="empty"><h2>Раздел в разработке</h2><p>Появится в следующих задачах.</p></div>
       </>}
 
-      {section === 'profile' && <Profile email={localStorage.getItem('nexora_email') ?? ''} showSpaces={() => { setSection('notes'); setSpace(null); }} />}
+      {section === 'profile' && <Profile onImport={() => setRefresh((value) => value + 1)} email={localStorage.getItem('nexora_email') ?? ''} showSpaces={() => { setSection('notes'); setSpace(null); }} />}
     </section>
     <nav className="bottom-nav" aria-label="Разделы приложения">
       {tabs.map((item) => <button key={item.id} aria-current={section === item.id ? 'page' : undefined} onClick={() => { setSection(item.id); if (item.id === 'notes') { setSpace(null); setQuery('') } }}>
