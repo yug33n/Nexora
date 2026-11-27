@@ -62,13 +62,16 @@ export function Profile({ email, showSpaces, onImport }: { email: string; showSp
         <div className="row"><dt>Поиск</dt><dd>По словам</dd></div>
         <div className="row"><dt>Модель ИИ</dt><dd>Не подключена</dd></div>
       </dl>
+    </div>
+    <h2 className="profile-heading">Резервная копия</h2>
+    <div className="rows">
       <button type="button" className="row profile-storage" onClick={exportNotes} disabled={exporting || importing}>
         <span>{exporting ? 'Экспортируем заметки…' : 'Экспортировать заметки'}</span>
-        <span>.zip</span>
+        <span>Скачать ZIP <span aria-hidden="true">›</span></span>
       </button>
       <button type="button" className="row profile-storage" onClick={() => importInput.current?.click()} disabled={exporting || importing}>
         <span>{importing ? 'Импортируем заметки…' : 'Импортировать заметки'}</span>
-        <span>.zip</span>
+        <span>Выбрать файл <span aria-hidden="true">›</span></span>
       </button>
       <input ref={importInput} type="file" accept=".zip,application/zip" hidden onChange={(event) => {
         const file = event.currentTarget.files?.[0]
